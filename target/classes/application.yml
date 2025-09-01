@@ -25,7 +25,7 @@ server:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/bankcards
+    url: jdbc:postgresql://localhost:5433/bankcards
     username: postgres
     password: admin
   jpa:
@@ -34,6 +34,8 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  liquibase:
+      change-log: classpath:db/migration/db.changelog-master.yml
 
 
 jwt:
