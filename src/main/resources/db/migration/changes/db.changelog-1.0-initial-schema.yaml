@@ -1,4 +1,20 @@
+
 databaseChangeLog:
+  # Сначала создаем последовательности
+  - changeSet:
+      id: create-sequences
+      author: developer
+      changes:
+        - createSequence:
+            sequenceName: users_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: cards_seq
+            startValue: 1
+            incrementBy: 1
+
+  # Затем создаем таблицы
   - changeSet:
       id: 1
       author: your-name
@@ -9,7 +25,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
-                  autoIncrement: true
+                  defaultValueSequenceNext: users_seq
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -50,7 +66,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
-                  autoIncrement: true
+                  defaultValueSequenceNext: cards_seq
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -73,5 +89,11 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_cards_users
-                    references: users(id)
+
+        # Отдельно создаем внешний ключ
+        - addForeignKeyConstraint:
+            baseTableName: cards
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_cards_users

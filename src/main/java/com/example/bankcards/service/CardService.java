@@ -44,12 +44,10 @@ public class CardService {
         Page<Card> page = null;
         if (user.getRole().equals(UserRole.ADMIN)) {
             page = cardRepository.findAll(pageable);
-            System.out.println(page.getContent().get(0).getPan());
-            return page.map(MaskService::MagicMask).
-                    map(c -> modelMapper.map(c, CardResponseDto.class));
+            return page.map(this::toCardResponseDto);
         } else {
             page = cardRepository.findByOwner(user, pageable);
-            return page.map(c -> modelMapper.map(c, CardResponseDto.class));
+            return page.map(this::toCardResponseDto);
         }
     }
 
@@ -91,6 +89,9 @@ public class CardService {
     @Transactional
     public CardResponseDto blockCard(Long id, User user) {
         Card card = cardRepository.findById(id).orElseThrow(() -> new CardNotFoundException("Card not found"));
+
+
+        // ошибка поменять логику (админ не может заблокировать  карту)
         if (!user.getId().equals(card.getOwner().getId()) || !user.getRole().equals(UserRole.ADMIN)) {
             throw new ForbiddenException("You don't have access to this card");
         }
@@ -131,6 +132,7 @@ public class CardService {
     private CardResponseDto toCardResponseDto(Card card) {
         CardResponseDto cardResponseDto = modelMapper.map(card, CardResponseDto.class);
         cardResponseDto.setOwnerName(card.getOwner().getUsername());
+        cardResponseDto.setPan(MaskService.MagicMask(card));
         return cardResponseDto;
     }
 

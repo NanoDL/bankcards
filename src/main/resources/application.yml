@@ -25,18 +25,31 @@ server:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/bankcards
+    url: jdbc:postgresql://db:5432/bankcards_db
     username: postgres
     password: admin
   jpa:
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  #  database: postgresql
+  #  database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: none
+  #  show-sql: true
+  #  properties:
+  #    hibernate:
+  #      # Отключаем валидацию схемы при старте
+  #      hbm2ddl.auto: none
+  #      jdbc.lob.non_contextual_creation: true
+
   liquibase:
-      change-log: classpath:db/migration/db.changelog-master.yml
+      change-log: classpath*:db/migration/db.changelog-master.yaml
+      enabled: true
+      drop-first: false  # true только для разработки, если нужно пересоздать БД
+      default-schema: public
 
 
 jwt:
   secret: secret
+
+app:
+  card:
+    encryption-key: secret

@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 
 public class MaskService {
 
-    public static Card MagicMask(Card card) {
+    public static String MagicMask(Card card) {
         String pan = card.getPan();
         String last4 = pan.substring(pan.length() - 4);
-        card.setPan("**** **** **** " + last4);
-        return card;
+       // card.setPan("**** **** **** " + last4);
+        return "**** **** **** " + last4;
     }
 
 }

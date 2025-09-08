@@ -1,32 +1,26 @@
-# --- Этап 1: Сборка проекта с использованием JDK 21 ---
-FROM eclipse-temurin:21-jdk-jammy as builder
+# Spring Boot Dockerfile
+FROM maven:3.9.11-eclipse-temurin-21-alpine AS build
 
 WORKDIR /app
 
-# Копируем файлы проекта для сборки
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
+# Копирование всего проекта
+COPY . .
 
-# Скачиваем зависимости
-RUN ./mvnw dependency:go-offline
+RUN ls -la src/main/resources/db/migration/
 
-# Копируем исходный код
-COPY src ./src
+# Сборка Spring Boot приложения
+RUN mvn clean package -DskipTests
 
-# Собираем проект с помощью Maven
-RUN ./mvnw clean package -DskipTests
-
-
-# --- Этап 2: Создание финального образа с использованием JRE 21 ---
-FROM eclipse-temurin:21-jre-jammy
+# Runtime образ
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 WORKDIR /app
 
-# Указываем аргумент для WAR файла
-ARG WAR_FILE=target/*.war
+# Копирование WAR файла из build stage
+COPY --from=build /app/target/*.war app.war
 
-# Копируем собранный WAR-файл из этапа "builder"
-COPY --from=builder /app/${WAR_FILE} app.war
+# Открытие порта
+EXPOSE 8070
 
-# Запускаем приложение
+# Запуск Spring Boot приложения
 ENTRYPOINT ["java", "-jar", "app.war"]
