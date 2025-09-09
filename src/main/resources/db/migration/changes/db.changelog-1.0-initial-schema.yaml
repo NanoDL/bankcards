@@ -1,9 +1,16 @@
-
 databaseChangeLog:
-  # Сначала создаем последовательности
   - changeSet:
       id: create-sequences
       author: developer
+      preConditions:
+        - onFail: MARK_RAN
+        - and:
+            - not:
+                sequenceExists:
+                  sequenceName: users_seq
+            - not:
+                sequenceExists:
+                  sequenceName: cards_seq
       changes:
         - createSequence:
             sequenceName: users_seq
@@ -14,10 +21,14 @@ databaseChangeLog:
             startValue: 1
             incrementBy: 1
 
-  # Затем создаем таблицы
   - changeSet:
       id: 1
       author: your-name
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: users
       changes:
         - createTable:
             tableName: users
@@ -59,6 +70,17 @@ databaseChangeLog:
   - changeSet:
       id: 2
       author: your-name
+      preConditions:
+        - onFail: MARK_RAN
+        - and:
+            - tableExists:
+                tableName: users
+            - not:
+                tableExists:
+                  tableName: cards
+            - not:
+                foreignKeyConstraintExists:
+                  foreignKeyName: fk_cards_users
       changes:
         - createTable:
             tableName: cards
@@ -90,7 +112,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
-        # Отдельно создаем внешний ключ
         - addForeignKeyConstraint:
             baseTableName: cards
             baseColumnNames: user_id

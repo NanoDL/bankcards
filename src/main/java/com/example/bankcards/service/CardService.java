@@ -90,14 +90,15 @@ public class CardService {
     public CardResponseDto blockCard(Long id, User user) {
         Card card = cardRepository.findById(id).orElseThrow(() -> new CardNotFoundException("Card not found"));
 
-
-        // ошибка поменять логику (админ не может заблокировать  карту)
-        if (!user.getId().equals(card.getOwner().getId()) || !user.getRole().equals(UserRole.ADMIN)) {
+        if (user.getId().equals(card.getOwner().getId()) || user.getRole().equals(UserRole.ADMIN)) {
+            card.setStatus(CardStatus.BLOCKED);
+            cardRepository.save(card);
+            return toCardResponseDto(card);
+        } else {
             throw new ForbiddenException("You don't have access to this card");
         }
-        card.setStatus(CardStatus.BLOCKED);
-        cardRepository.save(card);
-        return toCardResponseDto(card);
+
+
     }
 
     @Transactional

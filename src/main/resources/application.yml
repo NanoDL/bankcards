@@ -9,6 +9,7 @@
 
 springdoc:
   swagger-ui:
+    url: /openapi.yaml
     disable-swagger-default-url: true
     path: /swApi
     operations-sorter: method

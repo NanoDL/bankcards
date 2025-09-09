@@ -1,1 +1,252 @@
-# Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
+openapi: 3.0.3
+info:
+  title: Bank Cards API
+  description: API для управления банковскими картами и пользователями.
+  version: 1.0.0
+  contact:
+    name: Ulyamaev Ruslan
+    email: rulyamaev.2003@mail.ru
+servers:
+  - url: http://localhost:8060/swApi
+    description: Локальный сервер
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: Аутентификация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationDto'
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt-token:
+                    type: string
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterDto'
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt-token:
+                    type: string
+
+  /cards:
+    get:
+      summary: Получить список карт (ADMIN видит все, USER - только свои)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageCardResponseDto'
+    post:
+      summary: Создать новую карту (только ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ownerId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Карта создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponseDto'
+
+  /cards/{id}/balance:
+    get:
+      summary: Получить баланс карты (только USER)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Баланс карты
+          content:
+            application/json:
+              schema:
+                type: integer
+
+  /cards/{id}/block:
+    patch:
+      summary: Заблокировать карту (USER - свою, ADMIN - любую)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Карта заблокирована
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponseDto'
+
+  /cards/from/{idFrom}/to/{idTo}:
+    patch:
+      summary: Перевод средств между своими картами (только USER)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idFrom
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idTo
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Перевод выполнен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponseDto'
+
+  /users:
+    get:
+      summary: Получить список пользователей (только ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageUserResponseDto'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthenticationDto:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    UserRegisterDto:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+    CardResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        pan:
+          type: string
+          example: "**** **** **** 1234"
+        expirationDate:
+          type: string
+          format: date
+        ownerName:
+          type: string
+        balance:
+          type: integer
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, EXPIRED]
+    PageCardResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardResponseDto'
+    PageUserResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponseDto'
+    UserResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, USER]
+        enabled:
+          type: boolean

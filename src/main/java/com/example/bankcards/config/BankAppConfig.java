@@ -61,7 +61,7 @@ public class BankAppConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        String[] allowed = { "/v3/api-docs/swagger-config", "/v3/api-docs", "/swagger-ui/**", "/swApi", "/logout", "/api/auth/**"};
+        String[] allowed = { "/**", "/v3/api-docs/swagger-config", "/v3/api-docs", "/swagger-ui/**", "/swApi", "/logout", "/api/auth/**"};
         String[] admin = {"/api/cards/{id}/activate", "/api/cards/{id}", "/api/users/{id}", "/api/users"};
         String[] user = {"/api/cards/from/{idFrom}/to/{idTo}", "/api/cards/{id}/balance"};
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
